@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.http import Http404
 
 posts = [
     {
@@ -43,19 +44,37 @@ posts = [
     },
 ]
 
+post_positions = {post['id']: i for i, post in enumerate(posts)}
+
 
 def index(request):
-    return render(request, 'blog/index.html', {'posts': posts})
+    sorted_posts = sorted(posts, key=lambda post: post['id'], reverse=True)
+    return render(request, 'blog/index.html', {'posts': sorted_posts})
 
 
 def post_detail(request, id):
-    post = [post for post in posts if post['id'] == id]
-    return render(request, 'blog/detail.html', {'post': post[0]})
+    if id not in post_positions:
+        raise Http404('Неправильно набран адрес, '
+                      'или такой страницы на сайте больше не существует.')
+    return render(request, 'blog/detail.html',
+                  {'post': posts[post_positions[id]]})
 
 
+def category_posts(request, category_slug):
+    context = {'category': category_slug}
+    return render(request, 'blog/category.html', context)
+
+
+'''
+# Если нужно вывести название категории и все посты в ней
 def category_posts(request, category_slug):
     sorted_posts = [post for post in posts if
                     post['category'] == category_slug]
     context = {'category': category_slug,
                'posts': sorted_posts}
     return render(request, 'blog/category.html', context)
+# также в templates/blog/category.html добавить
+  {% if posts %}
+    {% include "includes/posts_list.html" %}
+  {% endif %}
+'''

@@ -1,5 +1,5 @@
-from django.urls import path
 from .views import about, rules
+from django.urls import path
 
 app_name = 'pages'
 urlpatterns = [

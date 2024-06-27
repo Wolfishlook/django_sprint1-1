@@ -44,7 +44,7 @@ posts = [
     },
 ]
 
-post_positions = {post['id']: i for i, post in enumerate(posts)}
+id_to_post = {post['id']: post for post in posts}
 
 
 def index(request):
@@ -53,28 +53,13 @@ def index(request):
 
 
 def post_detail(request, id):
-    if id not in post_positions:
-        raise Http404('Неправильно набран адрес, '
-                      'или такой страницы на сайте больше не существует.')
-    return render(request, 'blog/detail.html',
-                  {'post': posts[post_positions[id]]})
+    try:
+        post = id_to_post[id]
+        return render(request, 'blog/detail.html', {'post': post})
+    except IndexError:
+        raise Http404('blog.views_page_not_found')
 
 
 def category_posts(request, category_slug):
     context = {'category': category_slug}
     return render(request, 'blog/category.html', context)
-
-
-'''
-# Если нужно вывести название категории и все посты в ней
-def category_posts(request, category_slug):
-    sorted_posts = [post for post in posts if
-                    post['category'] == category_slug]
-    context = {'category': category_slug,
-               'posts': sorted_posts}
-    return render(request, 'blog/category.html', context)
-# также в templates/blog/category.html добавить
-  {% if posts %}
-    {% include "includes/posts_list.html" %}
-  {% endif %}
-'''
